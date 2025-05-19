@@ -45,6 +45,12 @@ The 1-shot approach MUST follow this sequence:
 ### Implementation with GibsonAI Next.js Starter App
 
 1. **Backend Creation with GibsonAI**
+   - Use the MCP Gibson tools available in Claude Code to interact with GibsonAI:
+     - `mcp__gibson__create_project`: Create a new project
+     - `mcp__gibson__get_projects`: List existing projects
+     - `mcp__gibson__get_project_details`: Get project details
+     - `mcp__gibson__submit_data_modeling_request`: Submit data modeling request
+     - `mcp__gibson__deploy_project`: Deploy the project
    - Submit data modeling request to create entities and relationships
    - Deploy the generated backend
    - Retrieve API key and OpenAPI spec URL
@@ -69,6 +75,22 @@ The 1-shot approach MUST follow this sequence:
    - Validation rules
 
 3. **Request sample data generation** for testing
+
+4. **Data Modeling Request Format**
+   The data modeling request to GibsonAI should follow this structured format:
+   ```
+   # Schema Design
+   [Detailed description of entities and their relationships]
+
+   # Authentication Requirements
+   [Specifics about auth mechanism]
+
+   # API Endpoints
+   [Required endpoints with HTTP methods]
+
+   # Sample Data
+   [Instructions for generating test data]
+   ```
 
 ### Frontend Implementation Focus Areas
 
@@ -116,6 +138,8 @@ The GibsonAI Next.js starter app provides several advantages for the 1-shot chal
    - Ensure proper API key integration
    - Use the correct query endpoint format
    - Handle SQL query escaping properly
+   - Always use the appropriate MCP tools (`mcp__gibson__*`) to interact with GibsonAI
+   - Remember that you need to create a project first before submitting data modeling requests
 
 2. **ShadCN UI Integration Problems**
    - Missing the `cn()` utility function

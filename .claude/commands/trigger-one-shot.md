@@ -5,14 +5,14 @@ You are about to begin the GibsonAI OneShot Hackathon Challenge for the SplitRec
 This command will load all necessary context and guide you through implementing a complete receipt splitting application
 in a single shot, using GibsonAI for the backend and the GibsonAI Next.js starter app for the frontend.
 
-```bash
-# Load all context files into Claude
 
-@ai-docs/gibson-mcp-integration.md
-@ai-docs/gibson-nextjs-integration.md
-@ai-docs/shadcn-ui-implementation.md
-@ai-docs/final-prompt.md
-```
+# Read all of the following files 
+
+- ai-docs/gibson-mcp-integration.md
+- ai-docs/gibson-nextjs-integration.md
+- ai-docs/shadcn-ui-implementation.md
+- ai-docs/final-prompt.md
+
 
 # SplitReceipt One-Shot Challenge
 
@@ -29,6 +29,8 @@ Your goal is to implement SplitReceipt, a full-stack application that allows use
 This implementation will use GibsonAI MCP for the backend and the GibsonAI Next.js starter app for the frontend.
 
 ## Implementation Strategy
+
+NOTE: THE ENTIRE DETAILED IMPLEMETNATION IS AVAILABLE IN @ai-docs/final-prompt.md
 
 To effectively handle this complex challenge, you should:
 
