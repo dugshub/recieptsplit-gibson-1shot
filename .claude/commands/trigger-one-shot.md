@@ -1,21 +1,18 @@
-#!/usr/bin/env bash
+# Trigger One-Shot Challenge
 
-# Trigger the one-shot SplitReceipt app implementation
 You are about to begin the GibsonAI OneShot Hackathon Challenge for the SplitReceipt application.
 
 This command will load all necessary context and guide you through implementing a complete receipt splitting application
 in a single shot, using GibsonAI for the backend and the GibsonAI Next.js starter app for the frontend.
 
-Hold tight, loading necessary context...
-EOF
-
+```bash
 # Load all context files into Claude
-cat /Users/dug/recieptsplit-gibson-1shot/CLAUDE.md
-cat /Users/dug/recieptsplit-gibson-1shot/ai-docs/gibson-mcp-integration.md
-cat /Users/dug/recieptsplit-gibson-1shot/ai-docs/shadcn-ui-implementation.md
-cat /Users/dug/recieptsplit-gibson-1shot/ai-docs/final-prompt.md
 
-cat << 'EOF'
+@ai-docs/gibson-mcp-integration.md
+@ai-docs/gibson-nextjs-integration.md
+@ai-docs/shadcn-ui-implementation.md
+@ai-docs/final-prompt.md
+```
 
 # SplitReceipt One-Shot Challenge
 
@@ -68,4 +65,3 @@ Start by analyzing the provided context and create a detailed implementation pla
 You MUST use the mcp__gibson tools to interact with GibsonAI for creating the backend.
 
 Begin now! Good luck with your implementation.
-EOF
