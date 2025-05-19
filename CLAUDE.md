@@ -45,13 +45,15 @@ The 1-shot approach MUST follow this sequence:
 ### Implementation with GibsonAI Next.js Starter App
 
 1. **Backend Creation with GibsonAI**
-   - Use the MCP Gibson tools available in Claude Code to interact with GibsonAI:
-     - `mcp__gibson__create_project`: Create a new project
+   - Use the MCP Gibson tools available in Claude Code to interact with GibsonAI in this specific order:
+     - Step 1: `mcp__gibson__create_project`: First create a new project
+     - Step 2: `mcp__gibson__get_project_details`: Get project details using the UUID from step 1
+     - Step 3: `mcp__gibson__submit_data_modeling_request`: Submit data modeling request using the UUID from step 1
+     - Step 4: `mcp__gibson__deploy_project`: Deploy the project using the UUID from step 1
+   - Other useful tools include:
      - `mcp__gibson__get_projects`: List existing projects
-     - `mcp__gibson__get_project_details`: Get project details
-     - `mcp__gibson__submit_data_modeling_request`: Submit data modeling request
-     - `mcp__gibson__deploy_project`: Deploy the project
-   - Submit data modeling request to create entities and relationships
+     - `mcp__gibson__get_project_schema`: Get current schema
+   - After creating a project, submit data modeling request to create entities and relationships
    - Deploy the generated backend
    - Retrieve API key and OpenAPI spec URL
 
