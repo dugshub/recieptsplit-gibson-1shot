@@ -1,0 +1,12 @@
+{
+    "mcpServers": {
+      "gibson": {
+        "command": "uvx",
+        "args": ["--from", "gibson-cli@latest", "gibson", "mcp", "run"]
+      },
+      "Context7": {
+        "command": "npx",
+        "args": ["-y", "@upstash/context7-mcp"]
+      }
+    }
+}
