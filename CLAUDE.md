@@ -18,20 +18,13 @@ SplitReceipt is a full-stack application that allows users to:
 - JWT-based authentication
 - SQL database with predefined schema
 
-### Frontend Options
-1. **Next.js Approach** (Recommended for 1-Shot Challenge):
-   - GibsonAI Next.js starter app
-   - Type-safe API client generation
-   - ShadCN UI components
-   - TailwindCSS for styling
+### Frontend Implementation
 
-2. **Vite Approach** (Alternative):
-   - React with TypeScript
-   - Vite as the build tool
-   - ShadCN UI components
-   - TailwindCSS for styling
-   - React Query for data fetching
-   - React Router for navigation
+The 1-shot challenge WILL use the **GibsonAI Next.js Starter App** approach:
+- GibsonAI Next.js starter app
+- Type-safe API client generation
+- ShadCN UI components
+- TailwindCSS for styling
 
 ## MCP Server Setup Requirements
 
@@ -47,9 +40,9 @@ Before beginning the 1-shot challenge, ensure that:
 
 ## Implementation Strategy
 
-The 1-shot approach must follow this sequence:
+The 1-shot approach MUST follow this sequence:
 
-### Option 1: Using GibsonAI Next.js Starter App (Recommended)
+### Implementation with GibsonAI Next.js Starter App
 
 1. **Backend Creation with GibsonAI**
    - Submit data modeling request to create entities and relationships
@@ -57,23 +50,10 @@ The 1-shot approach must follow this sequence:
    - Retrieve API key and OpenAPI spec URL
 
 2. **Frontend Implementation with Starter App**
-   - Request the generation of the Next.js starter app
+   - Generate the Next.js starter app
    - Provide API key and OpenAPI spec URL during setup
    - Enhance with ShadCN UI components
    - Implement key features using the generated type-safe client
-
-### Option 2: Custom Vite Implementation
-
-1. **Backend Creation with GibsonAI**
-   - Submit data modeling request to create entities and relationships
-   - Deploy the generated backend
-   - Retrieve connection details for frontend integration
-
-2. **Frontend Implementation with Vite**
-   - Project setup with Vite and dependencies
-   - UI component creation with ShadCN
-   - Manual API integration with GibsonAI backend
-   - Feature implementation (auth, trips, receipts, splits)
 
 ## Key Guidelines for the 1-Shot Challenge
 
@@ -92,27 +72,23 @@ The 1-shot approach must follow this sequence:
 
 ### Frontend Implementation Focus Areas
 
-1. **Decide on the appropriate approach**
-   - For maximum 1-shot efficiency, use the GibsonAI Next.js starter app
-   - For more control, use the custom Vite implementation
-
-2. **Configure ShadCN UI properly**
+1. **Configure ShadCN UI properly**
    - Initialize with correct Tailwind configuration
    - Create the right utility functions (e.g., `cn()`)
    - Follow component structure guidelines
 
-3. **Implement responsive design** from the start
+2. **Implement responsive design** from the start
    - Mobile-first approach
    - Proper breakpoints
 
-4. **Establish strong TypeScript patterns**
+3. **Establish strong TypeScript patterns**
    - Define interfaces for all data models
    - Use proper type imports
    - Maintain consistent typing
 
-5. **Create robust API integration**
-   - With Next.js starter: Use the generated type-safe client
-   - With Vite: Implement custom API services with React Query
+4. **Create robust API integration**
+   - Use the generated type-safe client from the Next.js starter app
+   - Handle errors and loading states properly
 
 ## GibsonAI Next.js Starter App
 
@@ -166,7 +142,7 @@ From our previous attempt, we learned:
    - More robust state management
    - Clearer API service structure
 
-3. **Consider using the Next.js starter app** instead of a custom Vite implementation for:
+3. **We MUST use the Next.js starter app** instead of a custom Vite implementation for:
    - Better type safety with the generated client
    - Reduced boilerplate code
    - More focus on feature implementation
