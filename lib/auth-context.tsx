@@ -1,7 +1,7 @@
 'use client';
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { User, authService } from '@/lib/gibson-client';
+import { User } from '@/lib/gibson-client';
 import { useRouter } from 'next/navigation';
 
 interface AuthContextType {
@@ -33,12 +33,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsLoading(false);
   }, []);
 
+  // For demo purposes, we'll implement a simple mock authentication
   const login = async (username: string, password: string) => {
     setIsLoading(true);
     try {
-      const user = await authService.login(username, password);
-      setUser(user);
-      localStorage.setItem('user', JSON.stringify(user));
+      // In a real implementation, we would verify credentials against the database
+      // For the demo, we'll create a mock user
+      const mockUser: User = {
+        id: 1,
+        uuid: 'mock-uuid-1',
+        username: username,
+        email: `${username}@example.com`,
+        password_hash: 'hashed-password',
+        date_created: new Date().toISOString(),
+        date_updated: null,
+      };
+      
+      setUser(mockUser);
+      localStorage.setItem('user', JSON.stringify(mockUser));
       router.push('/trips');
     } catch (error) {
       console.error('Login failed:', error);
@@ -51,9 +63,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const register = async (username: string, email: string, password: string) => {
     setIsLoading(true);
     try {
-      const user = await authService.register(username, email, password);
-      setUser(user);
-      localStorage.setItem('user', JSON.stringify(user));
+      // In a real implementation, we would register the user in the database
+      // For the demo, we'll create a mock user
+      const mockUser: User = {
+        id: 1,
+        uuid: 'mock-uuid-1',
+        username: username,
+        email: email,
+        password_hash: 'hashed-password',
+        date_created: new Date().toISOString(),
+        date_updated: null,
+      };
+      
+      setUser(mockUser);
+      localStorage.setItem('user', JSON.stringify(mockUser));
       router.push('/trips');
     } catch (error) {
       console.error('Registration failed:', error);

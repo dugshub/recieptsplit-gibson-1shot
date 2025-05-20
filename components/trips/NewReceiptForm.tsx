@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { receiptService, Receipt } from '@/lib/gibson-client';
+import { Receipt } from '@/lib/gibson-client';
 import { useAuth } from '@/lib/auth-context';
 
 interface NewReceiptFormProps {
@@ -46,20 +46,31 @@ export function NewReceiptForm({ tripId, onReceiptCreated }: NewReceiptFormProps
     setError(null);
     
     try {
-      const newReceipt = await receiptService.createReceipt(
-        tripId,
-        user.id,
+      // Create a mock receipt
+      const newReceipt: Receipt = {
+        id: 0, // This will be updated by the parent component
+        uuid: '',
+        trip_id: tripId,
+        user_id: user.id,
         title,
         date,
-        amount,
-        merchant || null
-      );
+        total_amount: amount,
+        merchant: merchant || null,
+        image_path: null,
+        processing_status: 'ready',
+        date_created: new Date().toISOString(),
+        date_updated: null,
+        username: user.username
+      };
       
-      onReceiptCreated(newReceipt);
+      // Simulate network delay
+      setTimeout(() => {
+        onReceiptCreated(newReceipt);
+        setIsLoading(false);
+      }, 500);
     } catch (error) {
       console.error('Failed to create receipt:', error);
       setError('Failed to add receipt. Please try again.');
-    } finally {
       setIsLoading(false);
     }
   };

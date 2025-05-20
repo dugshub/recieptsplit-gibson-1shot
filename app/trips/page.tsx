@@ -6,65 +6,121 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { TripCard } from '@/components/trips/TripCard';
 import { useAuth } from '@/lib/auth-context';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
-import { tripService, Trip, TripMember, receiptService, Receipt } from '@/lib/gibson-client';
+import { Trip, TripMember } from '@/lib/gibson-client';
 import Link from 'next/link';
 import { NewTripForm } from '@/components/trips/NewTripForm';
 
+// Mock data for demo purposes
+const mockTrips: Trip[] = [
+  {
+    id: 1,
+    uuid: 'trip-uuid-1',
+    name: 'Summer Vacation',
+    description: 'Beach trip with friends',
+    start_date: '2025-06-15',
+    end_date: '2025-06-22',
+    date_created: '2025-05-01T12:00:00Z',
+    date_updated: null
+  },
+  {
+    id: 2,
+    uuid: 'trip-uuid-2',
+    name: 'Weekend Getaway',
+    description: 'Cabin in the mountains',
+    start_date: '2025-07-10',
+    end_date: '2025-07-12',
+    date_created: '2025-05-05T14:30:00Z',
+    date_updated: null
+  }
+];
+
+const mockMembers: Record<number, TripMember[]> = {
+  1: [
+    {
+      id: 1,
+      uuid: 'member-uuid-1',
+      trip_id: 1,
+      user_id: 1,
+      role: 'owner',
+      date_created: '2025-05-01T12:00:00Z',
+      date_updated: null,
+      username: 'user1'
+    },
+    {
+      id: 2,
+      uuid: 'member-uuid-2',
+      trip_id: 1,
+      user_id: 2,
+      role: 'member',
+      date_created: '2025-05-01T12:05:00Z',
+      date_updated: null,
+      username: 'user2'
+    },
+    {
+      id: 3,
+      uuid: 'member-uuid-3',
+      trip_id: 1,
+      user_id: 3,
+      role: 'member',
+      date_created: '2025-05-01T12:10:00Z',
+      date_updated: null,
+      username: 'user3'
+    }
+  ],
+  2: [
+    {
+      id: 4,
+      uuid: 'member-uuid-4',
+      trip_id: 2,
+      user_id: 1,
+      role: 'owner',
+      date_created: '2025-05-05T14:30:00Z',
+      date_updated: null,
+      username: 'user1'
+    },
+    {
+      id: 5,
+      uuid: 'member-uuid-5',
+      trip_id: 2,
+      user_id: 2,
+      role: 'member',
+      date_created: '2025-05-05T14:35:00Z',
+      date_updated: null,
+      username: 'user2'
+    }
+  ]
+};
+
+const mockTotals: Record<number, number> = {
+  1: 750.50,
+  2: 325.75
+};
+
 export default function TripsPage() {
   const { user } = useAuth();
-  const [trips, setTrips] = useState<Trip[]>([]);
-  const [tripMembers, setTripMembers] = useState<Record<number, TripMember[]>>({});
-  const [tripTotals, setTripTotals] = useState<Record<number, number>>({});
-  const [isLoading, setIsLoading] = useState(true);
+  const [trips, setTrips] = useState<Trip[]>(mockTrips);
+  const [tripMembers, setTripMembers] = useState<Record<number, TripMember[]>>(mockMembers);
+  const [tripTotals, setTripTotals] = useState<Record<number, number>>(mockTotals);
+  const [isLoading, setIsLoading] = useState(false);
   const [showNewTripForm, setShowNewTripForm] = useState(false);
 
-  useEffect(() => {
-    const fetchTrips = async () => {
-      if (!user) return;
-      
-      try {
-        const fetchedTrips = await tripService.getTrips(user.id);
-        setTrips(fetchedTrips);
-        
-        // Fetch members and receipt totals for each trip
-        const memberPromises = fetchedTrips.map(trip => tripService.getTripMembers(trip.id));
-        const receiptPromises = fetchedTrips.map(trip => receiptService.getReceipts(trip.id));
-        
-        const membersResults = await Promise.all(memberPromises);
-        const receiptsResults = await Promise.all(receiptPromises);
-        
-        // Create trip members map
-        const membersMap: Record<number, TripMember[]> = {};
-        membersResults.forEach((members, index) => {
-          membersMap[fetchedTrips[index].id] = members;
-        });
-        setTripMembers(membersMap);
-        
-        // Calculate trip totals
-        const totalsMap: Record<number, number> = {};
-        receiptsResults.forEach((receipts, index) => {
-          const tripId = fetchedTrips[index].id;
-          totalsMap[tripId] = receipts.reduce((sum, receipt) => sum + receipt.total_amount, 0);
-        });
-        setTripTotals(totalsMap);
-      } catch (error) {
-        console.error("Error fetching trips:", error);
-      } finally {
-        setIsLoading(false);
-      }
+  const handleTripCreated = (newTrip: Trip) => {
+    // Add a new trip with a unique ID
+    const updatedTrip = {
+      ...newTrip,
+      id: trips.length + 1,
+      uuid: `trip-uuid-${trips.length + 1}`
     };
     
-    fetchTrips();
-  }, [user]);
-
-  const handleTripCreated = (newTrip: Trip) => {
-    setTrips([newTrip, ...trips]);
+    setTrips([updatedTrip, ...trips]);
+    
+    // Add the current user as a member
     setTripMembers({
       ...tripMembers, 
-      [newTrip.id]: [{ 
-        id: 0, 
-        uuid: '', 
-        trip_id: newTrip.id, 
+      [updatedTrip.id]: [{ 
+        id: Object.values(tripMembers).flat().length + 1, 
+        uuid: `member-uuid-${Object.values(tripMembers).flat().length + 1}`, 
+        trip_id: updatedTrip.id, 
         user_id: user!.id, 
         role: 'owner',
         date_created: new Date().toISOString(),
@@ -72,7 +128,10 @@ export default function TripsPage() {
         username: user!.username
       }]
     });
-    setTripTotals({...tripTotals, [newTrip.id]: 0});
+    
+    // Initialize trip total to 0
+    setTripTotals({...tripTotals, [updatedTrip.id]: 0});
+    
     setShowNewTripForm(false);
   };
 

@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { tripService, Trip } from '@/lib/gibson-client';
+import { Trip } from '@/lib/gibson-client';
 import { useAuth } from '@/lib/auth-context';
 
 interface NewTripFormProps {
@@ -39,19 +39,27 @@ export function NewTripForm({ onTripCreated }: NewTripFormProps) {
     setError(null);
     
     try {
-      const newTrip = await tripService.createTrip(
-        name, 
-        description || null, 
-        startDate, 
-        endDate || null, 
-        user.id
-      );
+      // Create a mock trip
+      const newTrip: Trip = {
+        id: 0, // This will be updated by the parent component
+        uuid: '',
+        name: name,
+        description: description || null,
+        start_date: startDate,
+        end_date: endDate || null,
+        date_created: new Date().toISOString(),
+        date_updated: null
+      };
       
-      onTripCreated(newTrip);
+      // Simulate network delay
+      setTimeout(() => {
+        onTripCreated(newTrip);
+        setIsLoading(false);
+      }, 500);
+      
     } catch (error) {
       console.error('Failed to create trip:', error);
       setError('Failed to create trip. Please try again.');
-    } finally {
       setIsLoading(false);
     }
   };
