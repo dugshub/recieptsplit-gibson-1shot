@@ -59,6 +59,7 @@ The 1-shot approach MUST follow this sequence:
 
 2. **Frontend Implementation with Starter App**
    - Generate the Next.js starter app
+   - **IMPORTANT**: Create the app directly in the current working directory, NOT in a subdirectory like 'splitreceipt-app'. All files should be in the root directory to avoid duplicate project structures.
    - Provide API key and OpenAPI spec URL during setup
    - Enhance with ShadCN UI components
    - Implement key features using the generated type-safe client
@@ -126,7 +127,9 @@ The GibsonAI Next.js starter app provides several advantages for the 1-shot chal
 
 4. **Integration Process**:
    - After creating your GibsonAI backend, you'll receive an API key and OpenAPI spec URL
-   - Use these to generate the starter app
+   - Use these to generate the starter app directly in the current working directory
+   - Do NOT create a new subdirectory (e.g., do not run commands that create a new folder like `npx create-gibson-app splitreceipt-app`)
+   - If you need to use a CLI tool, use `.` to specify the current directory (e.g., `npx create-gibson-app .`)
    - The app will be pre-configured to connect to your backend
 
 5. **Implementation Focus**:
@@ -143,12 +146,18 @@ The GibsonAI Next.js starter app provides several advantages for the 1-shot chal
    - Always use the appropriate MCP tools (`mcp__gibson__*`) to interact with GibsonAI
    - Remember that you need to create a project first before submitting data modeling requests
 
-2. **ShadCN UI Integration Problems**
+2. **Project Structure Issues**
+   - NEVER create a nested project structure or subdirectory for the app
+   - Keep all application files in the root directory
+   - Ensure there is only one copy of configuration files like package.json, tailwind.config.js
+   - Do not run commands that create new project folders (e.g., use `npx create-gibson-app .` instead of `npx create-gibson-app splitreceipt-app`)
+
+3. **ShadCN UI Integration Problems**
    - Missing the `cn()` utility function
    - Improper Tailwind CSS configuration
    - Forgetting to import required component dependencies
 
-3. **Frontend-Backend Integration Challenges**
+4. **Frontend-Backend Integration Challenges**
    - Mismatched data types between frontend and backend
    - Improper error handling
    - Missing authentication token management
