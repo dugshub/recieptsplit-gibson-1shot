@@ -194,10 +194,11 @@ The GibsonAI Next.js starter app provides several advantages for the 1-shot chal
    - Remember that you need to create a project first before submitting data modeling requests
 
 2. **Project Structure Issues**
-   - NEVER create a nested project structure or subdirectory for the app
-   - Keep all application files in the root directory
+   - Use the temporary directory approach to avoid git conflicts
+   - Keep the clean Next.js app in the root directory
+   - Extract only essential API files from the temp directory
+   - Always create a custom API service layer to work with the Gibson API
    - Ensure there is only one copy of configuration files like package.json, tailwind.config.js
-   - Do not run commands that create new project folders (e.g., use `npx create-gibson-app .` instead of `npx create-gibson-app splitreceipt-app`)
 
 3. **ShadCN UI Integration Problems**
    - Missing the `cn()` utility function
