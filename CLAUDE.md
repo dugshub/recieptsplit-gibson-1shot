@@ -98,9 +98,25 @@ The 1-shot approach MUST follow this sequence:
 ### Frontend Implementation Focus Areas
 
 1. **Configure ShadCN UI properly**
+   - Create the postcss.config.js file for Tailwind CSS with this content:
+     ```js
+     module.exports = {
+       plugins: {
+         tailwindcss: {},
+         autoprefixer: {},
+       },
+     }
+     ```
    - Initialize with correct Tailwind configuration
    - Create the right utility functions (e.g., `cn()`)
+   - Install **ALL** required dependencies:
+     ```bash
+     npm install class-variance-authority clsx tailwind-merge lucide-react
+     npm install @radix-ui/react-dialog @radix-ui/react-tabs @radix-ui/react-avatar @radix-ui/react-dropdown-menu
+     ```
+   - Use ShadCN UI components explicitly in your UI (Button, Card, Tabs) instead of plain HTML
    - Follow component structure guidelines
+   - Import components from '@/components/ui/' correctly
 
 2. **Implement responsive design** from the start
    - Mobile-first approach
@@ -155,7 +171,9 @@ The GibsonAI Next.js starter app provides several advantages for the 1-shot chal
 3. **ShadCN UI Integration Problems**
    - Missing the `cn()` utility function
    - Improper Tailwind CSS configuration
-   - Forgetting to import required component dependencies
+   - Forgetting to create postcss.config.js file needed for Tailwind
+   - Missing required Radix UI dependencies (@radix-ui/react-dialog, @radix-ui/react-tabs, etc.)
+   - Not explicitly using ShadCN UI components (use Button, Card, etc. components instead of plain HTML elements)
 
 4. **Frontend-Backend Integration Challenges**
    - Mismatched data types between frontend and backend
