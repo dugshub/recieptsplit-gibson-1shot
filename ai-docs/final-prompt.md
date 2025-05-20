@@ -110,15 +110,25 @@ After creating the backend, you'll have an API key and OpenAPI spec URL. Use the
 
 Set up ShadCN UI components within the Next.js starter app:
 
-1. Install ShadCN UI dependencies:
+1. Create a postcss.config.js file in the root directory (critical for Tailwind CSS):
+```javascript
+module.exports = {
+  plugins: {
+    tailwindcss: {},
+    autoprefixer: {},
+  },
+};
+```
+
+2. Install ALL necessary ShadCN UI dependencies:
 ```bash
 npm install class-variance-authority clsx tailwind-merge lucide-react
 npm install @radix-ui/react-dialog @radix-ui/react-tabs @radix-ui/react-avatar @radix-ui/react-dropdown-menu
 ```
 
-2. Configure Tailwind CSS with ShadCN UI variables (update tailwind.config.js)
+3. Configure Tailwind CSS with ShadCN UI variables (update tailwind.config.js)
 
-3. Create the `cn()` utility function in src/lib/utils.ts:
+4. Create the `cn()` utility function in src/lib/utils.ts:
 ```typescript
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
@@ -128,7 +138,7 @@ export function cn(...inputs: ClassValue[]) {
 }
 ```
 
-4. Implement key ShadCN UI components in the components/ui directory, including:
+5. Implement key ShadCN UI components in the components/ui directory, including:
    - Button
    - Card
    - Tabs
@@ -136,6 +146,11 @@ export function cn(...inputs: ClassValue[]) {
    - Avatar
    - Form
    - Input
+
+6. **IMPORTANT**: Always use ShadCN UI components explicitly in your UI instead of regular HTML elements:
+   - Use `<Button>` instead of `<button>` or styled links
+   - Use `<Card>`, `<CardHeader>`, etc. instead of styled divs
+   - Use the appropriate Radix UI primitives for complex components
 
 #### Key Pages to Implement
 
