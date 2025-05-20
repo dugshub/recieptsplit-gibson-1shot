@@ -161,18 +161,23 @@ You will need these in the next step.
 
 ## STEP 2: FRONTEND SETUP
 
-### 2.1. Run the GibsonAI Next.js setup script
+### 2.1. Create a Temporary Directory for GibsonAI Setup
 
-**EXTREMELY IMPORTANT:** Execute this command in the ROOT directory of the project, NOT in any subdirectory:
+To avoid potential git conflicts and nested project issues, we'll use a temporary directory for the GibsonAI setup:
 
 ```bash
+# Create a temporary directory
+mkdir -p temp_gibson_setup
+cd temp_gibson_setup
+
+# Run the GibsonAI setup script in the temporary directory
 bash <(curl -s https://raw.githubusercontent.com/GibsonAI/next-app/main/setup.sh)
 ```
 
-**YOU MUST RESPOND TO THE PROMPTS EXACTLY AS FOLLOWS:**
+**WHEN PROMPTED, PROVIDE THESE RESPONSES:**
 
 When you see: `Enter project name:`
-Type exactly: `.` (just a period)
+Type: `temp_app`
 
 When you see: `Enter Gibson API key:`
 Enter the API key you recorded from step 1.5
@@ -180,39 +185,126 @@ Enter the API key you recorded from step 1.5
 When you see: `Enter OpenAPI spec URL:`
 Enter the OpenAPI spec URL you recorded from step 1.5
 
-### 2.2. Handle potential OpenAPI schema error
+### 2.2. Set Up Clean Next.js Project in Main Directory
 
-If you see an error like `Can't parse empty schema`:
-
-1. Wait 60 seconds for the schema to fully deploy
-2. Create a .env.local file in the root directory with the following content:
+Return to your main project directory and create a new Next.js application:
 
 ```bash
-GIBSON_API_URL=https://api.gibsonai.com/
-GIBSON_API_KEY=[your API key from step 1.5]
-GIBSON_API_SPEC=https://api.gibsonai.com/-/openapi/[your docs_slug from step 1.5]
+# Return to main project directory
+cd ..
+
+# Create a new Next.js app in the current directory
+npx create-next-app@latest . --typescript --tailwind --eslint --app
 ```
 
-3. Run the following command:
+**ANSWER "Yes" TO ALL SETUP QUESTIONS**
+
+### 2.3. Copy Essential Files from Temporary Setup
+
+Extract only the essential API and authentication files from the temporary setup:
 
 ```bash
-npm run typegen
+# Create required directories if they don't exist
+mkdir -p lib app/auth
+
+# Copy API client files
+cp -r temp_gibson_setup/lib/gibson-client.ts lib/
+cp -r temp_gibson_setup/app/auth app/
+cp temp_gibson_setup/.env.local .
 ```
 
-If you continue to get errors, wait another 60 seconds and try again.
+### 2.4. Create Authentication Service
 
-### 2.3. Install additional required dependencies
+Create a service to handle authentication. Create a file at `lib/auth-service.ts`:
+
+```typescript
+// lib/auth-service.ts
+import { client } from './gibson-client';
+
+// Session management functions
+export const getToken = (): string | null => {
+  if (typeof window === 'undefined') return null;
+  return localStorage.getItem('auth_token');
+};
+
+export const setToken = (token: string): void => {
+  localStorage.setItem('auth_token', token);
+};
+
+export const clearToken = (): void => {
+  localStorage.removeItem('auth_token');
+};
+
+export const isAuthenticated = (): boolean => {
+  return !!getToken();
+};
+
+// Auth API functions - implementation will depend on generated client
+export const loginUser = async (credentials) => {
+  try {
+    const response = await client.auth.login(credentials);
+    if (response.token) {
+      setToken(response.token);
+    }
+    return response;
+  } catch (error) {
+    console.error('Login error:', error);
+    throw error;
+  }
+};
+
+export const registerUser = async (credentials) => {
+  try {
+    const response = await client.auth.register(credentials);
+    if (response.token) {
+      setToken(response.token);
+    }
+    return response;
+  } catch (error) {
+    console.error('Registration error:', error);
+    throw error;
+  }
+};
+
+export const logoutUser = (): void => {
+  clearToken();
+  window.location.href = '/';
+};
+```
+
+### 2.5. Install Required UI Dependencies
 
 ```bash
 npm install class-variance-authority clsx tailwind-merge lucide-react
 npm install @radix-ui/react-dialog @radix-ui/react-tabs @radix-ui/react-avatar @radix-ui/react-dropdown-menu
 ```
 
+### 2.6. Create API Integration Services
+
+Create a basic API service wrapper at `lib/api-service.ts`:
+
+```typescript
+// lib/api-service.ts
+import { getToken } from './auth-service';
+
+export const createApiRequest = async (requestFn, errorMessage = 'An error occurred') => {
+  try {
+    return await requestFn();
+  } catch (error) {
+    console.error(errorMessage, error);
+    throw {
+      message: errorMessage,
+      details: error
+    };
+  }
+};
+```
+
 ## STEP 3: UI ENHANCEMENT
 
-### 3.1. Create postcss.config.js file
+### 3.1. Configure Tailwind and PostCSS
 
-Create a file named `postcss.config.js` in the root directory with the following content:
+Create a file named `postcss.config.js` in the root directory:
 
 ```javascript
 module.exports = {
@@ -223,9 +315,9 @@ module.exports = {
 };
 ```
 
-### 3.2. Create the utility function for ShadCN UI
+### 3.2. Create the Utility Function for ShadCN UI
 
-Create or update the file `lib/utils.ts` with the following content:
+Create or update the file `lib/utils.ts`:
 
 ```typescript
 import { type ClassValue, clsx } from "clsx";
@@ -236,340 +328,324 @@ export function cn(...inputs: ClassValue[]) {
 }
 ```
 
-### 3.3. Create ShadCN UI components
+### 3.3. Set Up Key ShadCN UI Components
 
-Create the following essential UI components:
+Create a directory for UI components:
 
-**1. Button Component - `components/ui/button.tsx`**
-
-```typescript
-import * as React from "react";
-import { cva, type VariantProps } from "class-variance-authority";
-import { cn } from "@/lib/utils";
-
-const buttonVariants = cva(
-  "inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
-  {
-    variants: {
-      variant: {
-        default: "bg-primary text-primary-foreground hover:bg-primary/90",
-        destructive: "bg-destructive text-destructive-foreground hover:bg-destructive/90",
-        outline: "border border-input hover:bg-accent hover:text-accent-foreground",
-        secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/90",
-        ghost: "hover:bg-accent hover:text-accent-foreground",
-        link: "text-primary underline-offset-4 hover:underline",
-      },
-      size: {
-        default: "h-10 px-4 py-2",
-        sm: "h-9 rounded-md px-3",
-        lg: "h-11 rounded-md px-8",
-        icon: "h-10 w-10",
-      },
-    },
-    defaultVariants: {
-      variant: "default",
-      size: "default",
-    },
-  }
-);
-
-export interface ButtonProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
-    VariantProps<typeof buttonVariants> {
-  asChild?: boolean;
-}
-
-const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant, size, asChild = false, ...props }, ref) => {
-    return (
-      <button
-        className={cn(buttonVariants({ variant, size, className }))}
-        ref={ref}
-        {...props}
-      />
-    );
-  }
-);
-Button.displayName = "Button";
-
-export { Button, buttonVariants };
+```bash
+mkdir -p components/ui
 ```
 
-**2. Card Component - `components/ui/card.tsx`**
+Refer to the ui-design-guidelines.md document for detailed styling patterns.
 
-```typescript
-import * as React from "react";
-import { cn } from "@/lib/utils";
+Install the ShadCN CLI for easier component setup:
 
-const Card = React.forwardRef<
-  HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement>
->(({ className, ...props }, ref) => (
-  <div
-    ref={ref}
-    className={cn(
-      "rounded-lg border bg-card text-card-foreground shadow-sm",
-      className
-    )}
-    {...props}
-  />
-));
-Card.displayName = "Card";
+```bash
+npm install -D @shadcn/ui
+```
 
-const CardHeader = React.forwardRef<
-  HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement>
->(({ className, ...props }, ref) => (
-  <div
-    ref={ref}
-    className={cn("flex flex-col space-y-1.5 p-6", className)}
-    {...props}
-  />
-));
-CardHeader.displayName = "CardHeader";
+Add essential components using the CLI:
 
-const CardTitle = React.forwardRef<
-  HTMLParagraphElement,
-  React.HTMLAttributes<HTMLHeadingElement>
->(({ className, ...props }, ref) => (
-  <h3
-    ref={ref}
-    className={cn(
-      "text-2xl font-semibold leading-none tracking-tight",
-      className
-    )}
-    {...props}
-  />
-));
-CardTitle.displayName = "CardTitle";
+```bash
+# Add button component
+npx shadcn-ui@latest add button
 
-const CardDescription = React.forwardRef<
-  HTMLParagraphElement,
-  React.HTMLAttributes<HTMLParagraphElement>
->(({ className, ...props }, ref) => (
-  <p
-    ref={ref}
-    className={cn("text-sm text-muted-foreground", className)}
-    {...props}
-  />
-));
-CardDescription.displayName = "CardDescription";
+# Add card component
+npx shadcn-ui@latest add card
 
-const CardContent = React.forwardRef<
-  HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement>
->(({ className, ...props }, ref) => (
-  <div ref={ref} className={cn("p-6 pt-0", className)} {...props} />
-));
-CardContent.displayName = "CardContent";
+# Add tabs component
+npx shadcn-ui@latest add tabs
 
-const CardFooter = React.forwardRef<
-  HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement>
->(({ className, ...props }, ref) => (
-  <div
-    ref={ref}
-    className={cn("flex items-center p-6 pt-0", className)}
-    {...props}
-  />
-));
-CardFooter.displayName = "CardFooter";
+# Add other needed components
+npx shadcn-ui@latest add avatar
+npx shadcn-ui@latest add dialog
+npx shadcn-ui@latest add dropdown-menu
+```
 
-export {
-  Card,
-  CardHeader,
-  CardFooter,
-  CardTitle,
-  CardDescription,
-  CardContent,
+### 3.4. Set Up Color Scheme
+
+Ensure your `tailwind.config.js` includes the following color variables:
+
+```javascript
+/** @type {import('tailwindcss').Config} */
+module.exports = {
+  darkMode: ["class"],
+  content: [
+    "./pages/**/*.{ts,tsx}",
+    "./components/**/*.{ts,tsx}",
+    "./app/**/*.{ts,tsx}",
+    "./src/**/*.{ts,tsx}",
+  ],
+  theme: {
+    container: {
+      center: true,
+      padding: "2rem",
+      screens: {
+        "2xl": "1400px",
+      },
+    },
+    extend: {
+      colors: {
+        border: "hsl(var(--border))",
+        input: "hsl(var(--input))",
+        ring: "hsl(var(--ring))",
+        background: "hsl(var(--background))",
+        foreground: "hsl(var(--foreground))",
+        primary: {
+          DEFAULT: "hsl(var(--primary))",
+          foreground: "hsl(var(--primary-foreground))",
+        },
+        secondary: {
+          DEFAULT: "hsl(var(--secondary))",
+          foreground: "hsl(var(--secondary-foreground))",
+        },
+        destructive: {
+          DEFAULT: "hsl(var(--destructive))",
+          foreground: "hsl(var(--destructive-foreground))",
+        },
+        muted: {
+          DEFAULT: "hsl(var(--muted))",
+          foreground: "hsl(var(--muted-foreground))",
+        },
+        accent: {
+          DEFAULT: "hsl(var(--accent))",
+          foreground: "hsl(var(--accent-foreground))",
+        },
+        popover: {
+          DEFAULT: "hsl(var(--popover))",
+          foreground: "hsl(var(--popover-foreground))",
+        },
+        card: {
+          DEFAULT: "hsl(var(--card))",
+          foreground: "hsl(var(--card-foreground))",
+        },
+      },
+      borderRadius: {
+        lg: "var(--radius)",
+        md: "calc(var(--radius) - 2px)",
+        sm: "calc(var(--radius) - 4px)",
+      },
+      keyframes: {
+        "accordion-down": {
+          from: { height: 0 },
+          to: { height: "var(--radix-accordion-content-height)" },
+        },
+        "accordion-up": {
+          from: { height: "var(--radix-accordion-content-height)" },
+          to: { height: 0 },
+        },
+      },
+      animation: {
+        "accordion-down": "accordion-down 0.2s ease-out",
+        "accordion-up": "accordion-up 0.2s ease-out",
+      },
+    },
+  },
+  plugins: [require("tailwindcss-animate")],
 };
 ```
 
-**3. Tabs Component - `components/ui/tabs.tsx`**
+### 3.5. Update Global CSS Variables
 
-```typescript
-import * as React from "react";
-import * as TabsPrimitive from "@radix-ui/react-tabs";
-import { cn } from "@/lib/utils";
+Update your `app/globals.css` file to include the color scheme variables:
 
-const Tabs = TabsPrimitive.Root;
-
-const TabsList = React.forwardRef<
-  React.ElementRef<typeof TabsPrimitive.List>,
-  React.ComponentPropsWithoutRef<typeof TabsPrimitive.List>
->(({ className, ...props }, ref) => (
-  <TabsPrimitive.List
-    ref={ref}
-    className={cn(
-      "inline-flex h-10 items-center justify-center rounded-md bg-muted p-1 text-muted-foreground",
-      className
-    )}
-    {...props}
-  />
-));
-TabsList.displayName = TabsPrimitive.List.displayName;
-
-const TabsTrigger = React.forwardRef<
-  React.ElementRef<typeof TabsPrimitive.Trigger>,
-  React.ComponentPropsWithoutRef<typeof TabsPrimitive.Trigger>
->(({ className, ...props }, ref) => (
-  <TabsPrimitive.Trigger
-    ref={ref}
-    className={cn(
-      "inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm",
-      className
-    )}
-    {...props}
-  />
-));
-TabsTrigger.displayName = TabsPrimitive.Trigger.displayName;
-
-const TabsContent = React.forwardRef<
-  React.ElementRef<typeof TabsPrimitive.Content>,
-  React.ComponentPropsWithoutRef<typeof TabsPrimitive.Content>
->(({ className, ...props }, ref) => (
-  <TabsPrimitive.Content
-    ref={ref}
-    className={cn(
-      "mt-2 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
-      className
-    )}
-    {...props}
-  />
-));
-TabsContent.displayName = TabsPrimitive.Content.displayName;
-
-export { Tabs, TabsList, TabsTrigger, TabsContent };
+```css
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+ 
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+ 
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+ 
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+ 
+    --primary: 221.2 83.2% 53.3%;
+    --primary-foreground: 210 40% 98%;
+ 
+    --secondary: 160 84% 39%;
+    --secondary-foreground: 210 40% 98%;
+ 
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+ 
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+ 
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+ 
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 221.2 83.2% 53.3%;
+ 
+    --radius: 0.5rem;
+  }
+ 
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+ 
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+ 
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+ 
+    --primary: 217.2 91.2% 59.8%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+ 
+    --secondary: 160 84% 39%;
+    --secondary-foreground: 210 40% 98%;
+ 
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+ 
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+ 
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+ 
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 212.7 26.8% 83.9%;
+  }
+}
+ 
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+}
 ```
 
 ## STEP 4: FEATURE IMPLEMENTATION
 
-### 4.1. Update the homepage
+### 4.1. Create Layout Structure
 
-Update the `app/page.tsx` file to use the ShadCN UI components:
+First, create a consistent layout structure:
+
+1. Update `app/layout.tsx` to include authentication provider and navigation:
+
+```tsx
+// This is just a guideline structure - implement based on your needs
+import { AuthProvider } from "@/lib/auth-context";
+import "./globals.css";
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <html lang="en">
+      <body>
+        <AuthProvider>
+          {/* Include navigation here if needed */}
+          <main className="min-h-screen">{children}</main>
+        </AuthProvider>
+      </body>
+    </html>
+  );
+}
+```
+
+### 4.2. Implement Authentication-Aware Home Page
+
+Create a home page that adapts to authentication state:
+
+1. Create `app/page.tsx` following the design guidelines:
 
 ```tsx
 'use client';
 
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useAuth } from '@/lib/auth-context';
 
 export default function Home() {
+  const { isAuthenticated, isLoading } = useAuth();
+  
+  // If loading, show a spinner
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <div className="animate-spin h-12 w-12 border-t-2 border-b-2 border-primary rounded-full"></div>
+      </div>
+    );
+  }
+  
+  // If logged in, show dashboard or redirect to trips
+  if (isAuthenticated) {
+    return <AuthenticatedHome />;
+  }
+  
+  // Otherwise show landing page for non-authenticated users
+  return <LandingPage />;
+}
+
+// Landing page component for non-authenticated users
+function LandingPage() {
+  // Implement based on ui-design-guidelines.md
   return (
     <div className="container mx-auto min-h-screen flex flex-col justify-center items-center">
       <div className="text-center space-y-6 max-w-2xl mx-auto">
-        <h1 className="text-4xl font-bold tracking-tight">SplitReceipt</h1>
+        <h1 className="text-5xl font-bold tracking-tight">SplitReceipt</h1>
         <p className="text-xl text-muted-foreground">
           The easiest way to split expenses with friends, family, and colleagues.
         </p>
-
-        <div className="flex flex-col sm:flex-row gap-4 justify-center mt-8">
-          <Button asChild size="lg">
-            <Link href="/auth/login">Login</Link>
-          </Button>
-          <Button asChild variant="secondary" size="lg">
-            <Link href="/auth/register">Register</Link>
-          </Button>
-        </div>
-
-        <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-8">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-xl">Create Trips</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground">Organize your expenses by trips or events with friends, family, or colleagues.</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-xl">Upload Receipts</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground">Easily record and categorize your expenses with detailed receipt tracking.</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-xl">Split Fairly</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground">Split costs evenly or by custom amounts and see who owes what at a glance.</p>
-            </CardContent>
-          </Card>
-        </div>
+        
+        {/* Add CTA buttons */}
+        {/* Add feature cards */}
       </div>
+    </div>
+  );
+}
+
+// Home page for authenticated users
+function AuthenticatedHome() {
+  // Implement based on ui-design-guidelines.md
+  return (
+    <div className="container mx-auto py-8">
+      <h1 className="text-3xl font-bold mb-6">Dashboard</h1>
+      
+      {/* Add recent trips section */}
+      {/* Add quick actions */}
     </div>
   );
 }
 ```
 
-### 4.2. Create a Trip Card component
+### 4.3. Create Trip Management Pages
 
-Create a file called `components/trips/TripCard.tsx`:
+Follow these guidelines to implement trip management:
 
-```tsx
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import Link from "next/link";
-
-interface TripCardProps {
-  trip: {
-    id: number;
-    name: string;
-    start_date: string;
-    end_date?: string;
-  };
-  members: Array<{
-    id: number;
-    username: string;
-  }>;
-  totalAmount: number;
-}
-
-export function TripCard({ trip, members, totalAmount }: TripCardProps) {
-  return (
-    <Link href={`/trips/${trip.id}`}>
-      <Card className="cursor-pointer hover:shadow-md transition-shadow">
-        <CardHeader className="pb-2">
-          <CardTitle>{trip.name}</CardTitle>
-          <p className="text-sm text-muted-foreground">
-            {new Date(trip.start_date).toLocaleDateString()} - 
-            {trip.end_date ? new Date(trip.end_date).toLocaleDateString() : "Ongoing"}
-          </p>
-        </CardHeader>
-        <CardContent>
-          <div className="flex justify-between items-center">
-            <div className="flex -space-x-2">
-              {members.slice(0, 3).map((member) => (
-                <div key={member.id} className="h-8 w-8 rounded-full bg-primary text-primary-foreground border-2 border-white flex items-center justify-center text-xs font-bold">
-                  {member.username.slice(0, 2).toUpperCase()}
-                </div>
-              ))}
-              
-              {members.length > 3 && (
-                <div className="h-8 w-8 rounded-full bg-muted text-muted-foreground border-2 border-white flex items-center justify-center text-xs font-bold">
-                  +{members.length - 3}
-                </div>
-              )}
-            </div>
-            
-            <div className="bg-muted px-3 py-1 rounded-full text-sm font-medium">
-              ${totalAmount.toFixed(2)}
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-    </Link>
-  );
-}
+1. Create directory structure:
+```
+app/
+  trips/
+    page.tsx       # Trip list page
+    new/
+      page.tsx     # New trip form
+    [tripId]/
+      page.tsx     # Trip details with tabs
+      receipts/
+        page.tsx   # Receipts list
+      members/
+        page.tsx   # Members management
 ```
 
-### 4.3. Create Trips Page
-
-Create a file called `app/trips/page.tsx`:
+2. Implement trips list with proper loading, empty, and error states:
 
 ```tsx
 'use client';
@@ -577,94 +653,180 @@ Create a file called `app/trips/page.tsx`:
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { TripCard } from '@/components/trips/TripCard';
-import { client } from '@/lib/gibson-client';
+import { useTrips } from '@/lib/hooks/useTrips';
+import { withAuth } from '@/lib/with-auth';
 
-export default function TripsPage() {
-  const [trips, setTrips] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
+// Implement trip list page following ui-design-guidelines.md
+// Key features:
+// - Show loading state
+// - Show empty state with CTA
+// - Show error state with retry
+// - Display grid of trip cards
+// - Include create trip button
+// - Use responsive grid layout
+```
 
-  useEffect(() => {
-    async function fetchTrips() {
-      try {
-        // This assumes the generated client has a trips.getAll method
-        const tripsData = await client.trips.getAll();
-        setTrips(tripsData);
-      } catch (error) {
-        console.error('Error fetching trips:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    }
+3. Create TripCard component:
 
-    fetchTrips();
-  }, []);
+```tsx
+// components/trips/TripCard.tsx
+import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/card';
+import Link from 'next/link';
 
-  if (isLoading) {
-    return (
-      <div className="container mx-auto py-12 flex justify-center">
-        <div className="animate-spin h-12 w-12 border-t-2 border-b-2 border-primary rounded-full"></div>
-      </div>
-    );
-  }
+// Implement based on ui-design-guidelines.md
+// Key features:
+// - Display trip name, date range
+// - Show member avatars with overflow indicator
+// - Display total amount badge
+// - Use hover effects for interactive feedback
+```
 
-  return (
-    <div className="container mx-auto py-8">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">My Trips</h1>
-        <Link href="/trips/new">
-          <Button>Create New Trip</Button>
-        </Link>
-      </div>
+### 4.4. Create Authentication Flow
 
-      {trips.length === 0 ? (
-        <div className="text-center py-12 bg-white rounded-lg shadow-sm">
-          <h3 className="text-lg font-medium mb-2">No trips yet</h3>
-          <p className="text-muted-foreground mb-6">Create your first trip to get started</p>
-          <Link href="/trips/new">
-            <Button>Create Trip</Button>
-          </Link>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {trips.map((trip) => (
-            <TripCard 
-              key={trip.id} 
-              trip={trip} 
-              members={trip.members || []} 
-              totalAmount={trip.totalAmount || 0} 
-            />
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
+Implement authentication components:
+
+1. Login/Registration components:
+
+```tsx
+// app/auth/login/page.tsx & app/auth/register/page.tsx
+'use client';
+
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { loginUser, registerUser } from '@/lib/auth-service';
+
+// Implement following ui-design-guidelines.md
+// Key features:
+// - Form validation
+// - Error handling
+// - Success redirection
+// - Loading states during submission
+```
+
+### 4.5. Create Receipt Management
+
+Implement receipt features:
+
+1. Receipt forms:
+
+```tsx
+// components/receipts/ReceiptForm.tsx
+// components/receipts/LineItemForm.tsx
+
+// Implement following ui-design-guidelines.md
+// Key features:
+// - Dynamic line item addition
+// - Form validation
+// - Total calculation
+// - Save/cancel actions
+```
+
+2. Receipt list:
+
+```tsx
+// app/trips/[tripId]/receipts/page.tsx
+
+// Implement following ui-design-guidelines.md
+// Key features:
+// - List receipts with key details
+// - Add receipt button
+// - Receipt card with preview information
+```
+
+3. Line item splitting interface:
+
+```tsx
+// components/receipts/SplitInterface.tsx
+
+// Implement following ui-design-guidelines.md
+// Key features:
+// - Member selection
+// - Amount input
+// - Split evenly button
+// - Remaining amount display
+```
 ```
 
 ## STEP 5: TESTING
 
-### 5.1. Start the development server
+### 5.1. Testing API Integration
+
+Before starting the development server, test your API integration:
+
+```bash
+# Test API key and OpenAPI spec URL
+curl -H "X-Gibson-API-Key: YOUR_API_KEY" https://api.gibsonai.com/-/openapi/YOUR_DOCS_SLUG
+```
+
+If you receive valid response, your API is properly configured.
+
+### 5.2. Run the Development Server
+
+Start the Next.js development server:
 
 ```bash
 npm run dev
 ```
 
-### 5.2. Test the application
+### 5.3. Testing Authentication Flow
 
 1. Open your browser to http://localhost:3000
-2. Verify the home page loads correctly with styling
-3. Test the login/register navigation
-4. Navigate to /trips to test the trips page
+2. Click "Register" and create a test account
+3. Verify you can log out and log back in
+4. Check that protected routes redirect to login when not authenticated
 
-## Next Steps
+### 5.4. Testing Trip Management
 
-Once the basic structure is working, continue implementing:
+1. Create a new trip
+2. Verify the trip appears in the trips list
+3. Navigate to the trip details page
+4. Try adding members to the trip
+5. Verify you can navigate between tabs (receipts, members, balances)
 
-1. Authentication flow
-2. Trip details page with receipts tab
-3. Receipt entry form
-4. Line item splitting interface
-5. Balance calculation
+### 5.5. Testing Receipt Management
 
-Refer to the reference documents for detailed implementation guidelines for these features.
+1. Add a receipt to a trip
+2. Add line items to the receipt
+3. Test the splitting interface
+4. Verify the balances update correctly
+
+### 5.6. Cross-Browser and Responsive Testing
+
+1. Test on multiple devices or using browser DevTools responsive mode
+2. Verify the UI is properly responsive
+3. Check that all interactive elements are properly sized for touch input
+
+### 5.7. Error Handling Testing
+
+1. Test behavior with API errors (you can temporarily modify API key to simulate)
+2. Verify loading states appear appropriately
+3. Check that error messages are user-friendly
+
+## Debugging Tips
+
+If you encounter issues:
+
+1. **API Integration Problems**:
+   - Check `.env.local` file for correct API credentials
+   - Verify OpenAPI schema is correctly fetched
+   - Check your browser console for network errors
+
+2. **Styling Issues**:
+   - Confirm CSS variables are properly defined in `globals.css`
+   - Verify Tailwind is properly configured
+   - Check for class name conflicts
+
+3. **Authentication Problems**:
+   - Check token storage in localStorage
+   - Verify API calls include the authentication token
+   - Confirm auth provider is correctly wrapping your application
+
+4. **Data Display Issues**:
+   - Verify data structure matches your component expectations
+   - Check for null/undefined handling in components
+   - Add console logs to debug data flow
+
+5. **Navigation Issues**:
+   - Make sure you're using Next.js navigation correctly (Link components, useRouter)
+   - Check dynamic routes are properly structured
+   - Verify auth redirect logic works correctly

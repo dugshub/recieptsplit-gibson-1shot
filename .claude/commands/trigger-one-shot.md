@@ -9,8 +9,9 @@ in a single shot, using GibsonAI for the backend and the GibsonAI Next.js starte
 # Read all of the following files 
 
 - ai-docs/step-by-step-implementation.md  # Primary implementation guide
+- ai-docs/ui-design-guidelines.md        # UI design patterns and styling
+- ai-docs/api-integration-guide.md       # API integration instructions
 - ai-docs/gibson-mcp-integration.md      # Reference for GibsonAI backend
-- ai-docs/shadcn-ui-implementation.md    # Reference for UI components
 
 
 # SplitReceipt One-Shot Challenge
