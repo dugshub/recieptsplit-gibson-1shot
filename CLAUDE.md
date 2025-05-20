@@ -58,21 +58,30 @@ The 1-shot approach MUST follow this sequence:
    - Retrieve API key and OpenAPI spec URL
 
 2. **Frontend Implementation with Starter App**
-   - Use the official GibsonAI Next.js starter app setup script:
+   - Use a temporary directory approach with the official GibsonAI setup script:
      ```bash
+     # Create a temporary directory for setup
+     mkdir -p temp_gibson_setup
+     cd temp_gibson_setup
+     
+     # Run the GibsonAI setup script in temporary directory
      bash <(curl -s https://raw.githubusercontent.com/GibsonAI/next-app/main/setup.sh)
      ```
-   - **IMPORTANT**: When prompted for the project name/directory, use `.` to create the app directly in the current directory, NOT in a subdirectory
-   - During setup, you will be prompted for:
-     - Your GibsonAI API key
-     - OpenAPI spec URL from your created project
-   - After setup completes, the following will be configured:
-     - Next.js app structure
-     - Type-safe API client (generated from OpenAPI spec)
-     - Authentication system
-     - Environment variables
+   - When prompted for project name, use `temp_app` (NOT `.`)
+   - After setup in the temporary directory, create a clean Next.js app in the root:
+     ```bash
+     cd ..
+     npx create-next-app@latest . --typescript --tailwind --eslint --app
+     ```
+   - Extract only the essential connectivity files from the temp directory:
+     ```bash
+     cp -r temp_gibson_setup/lib/gibson-client.ts lib/
+     cp -r temp_gibson_setup/app/auth app/
+     cp temp_gibson_setup/.env.local .
+     ```
+   - Create custom API service layer and authentication flow
    - Enhance with ShadCN UI components
-   - Implement key features using the pre-configured type-safe client
+   - Implement key features using the extracted API client
 
 ## Key Guidelines for the 1-Shot Challenge
 
@@ -153,15 +162,22 @@ The GibsonAI Next.js starter app provides several advantages for the 1-shot chal
 
 4. **Integration Process**:
    - After creating your GibsonAI backend, you'll receive an API key and OpenAPI spec URL
-   - Use the official GibsonAI setup script:
+   - Use the official GibsonAI setup script in a temporary directory:
      ```bash
+     mkdir -p temp_gibson_setup
+     cd temp_gibson_setup
      bash <(curl -s https://raw.githubusercontent.com/GibsonAI/next-app/main/setup.sh)
      ```
-   - When prompted for project directory, enter `.` to create in the current directory
-   - Provide your API key and OpenAPI spec URL when prompted
-   - Do NOT create a new subdirectory - always install directly in the current directory
-   - The setup script will configure authentication, API client generation, and environment variables
-   - The app will be pre-configured to connect to your backend with proper authentication
+   - When prompted, provide your API key and OpenAPI spec URL
+   - Create a clean Next.js app in the root directory:
+     ```bash
+     cd ..
+     npx create-next-app@latest . --typescript --tailwind --eslint --app
+     ```
+   - Extract only the essential connectivity files from temp directory
+   - Create a custom authentication service that works with the GibsonAI API
+   - Create error handling wrappers and reusable service functions
+   - The result is a clean project with proper Gibson API connectivity
 
 5. **Implementation Focus**:
    - Add ShadCN UI components for enhanced UI
