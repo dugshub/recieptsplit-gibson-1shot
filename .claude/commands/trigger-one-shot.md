@@ -8,10 +8,9 @@ in a single shot, using GibsonAI for the backend and the GibsonAI Next.js starte
 
 # Read all of the following files 
 
-- ai-docs/gibson-mcp-integration.md
-- ai-docs/gibson-nextjs-integration.md
-- ai-docs/shadcn-ui-implementation.md
-- ai-docs/final-prompt.md
+- ai-docs/step-by-step-implementation.md  # Primary implementation guide
+- ai-docs/gibson-mcp-integration.md      # Reference for GibsonAI backend
+- ai-docs/shadcn-ui-implementation.md    # Reference for UI components
 
 
 # SplitReceipt One-Shot Challenge
@@ -30,40 +29,46 @@ This implementation will use GibsonAI MCP for the backend and the GibsonAI Next.
 
 ## Implementation Strategy
 
-NOTE: THE ENTIRE DETAILED IMPLEMETNATION IS AVAILABLE IN @ai-docs/final-prompt.md
+NOTE: THE ENTIRE DETAILED IMPLEMENTATION IS AVAILABLE IN @ai-docs/step-by-step-implementation.md
 
-To effectively handle this complex challenge, you should:
+To effectively implement this challenge, you should:
 
-1. Break down the implementation into distinct phases:
-   - Backend implementation with GibsonAI MCP
-   - Frontend implementation with the GibsonAI Next.js starter app
-   - UI enhancement with ShadCN UI components
-   - Core feature implementation
+1. Follow the numbered steps in the step-by-step-implementation.md guide precisely
+   - The guide provides clear, sequential steps with exact instructions
+   - Execute each step in the exact order provided
+   - Use the exact commands and responses specified
 
-2. For each major phase, delegate the detailed implementation to a separate Claude instance using the Task tool.
-   - This ensures each part gets the focused attention it needs
-   - It keeps your context clean for orchestrating the overall implementation
-   - You can provide each delegate with specific requirements and context
+2. The implementation is organized into five distinct phases:
+   - STEP 1: BACKEND CREATION - Create GibsonAI backend
+   - STEP 2: FRONTEND SETUP - Set up Next.js app with GibsonAI script
+   - STEP 3: UI ENHANCEMENT - Add ShadCN UI components
+   - STEP 4: FEATURE IMPLEMENTATION - Build core features
+   - STEP 5: TESTING - Verify functionality
 
-3. Maintain a clear roadmap of what has been done and what remains to be completed.
+3. Pay special attention to:
+   - Using the GibsonAI setup script correctly (entering "." when prompted for directory)
+   - Implementing error recovery steps when needed
+   - Using ShadCN UI components explicitly instead of plain HTML
 
-4. After each major phase, summarize the progress and plan the next steps.
+4. After each major phase, mark it as completed and proceed to the next step
 
-## Your Role as Orchestrator
+## Implementation Execution
 
-As the primary Claude instance, your role is to:
+Your role is to:
 
 1. Understand the complete implementation requirements
-2. Create a detailed plan for implementation
-3. Delegate specific implementation tasks to separate Claude instances
-4. Integrate the results from each delegate instance
-5. Ensure the complete implementation meets the requirements
-6. Handle any issues or inconsistencies that arise
+2. Follow the step-by-step implementation guide precisely
+3. Pay careful attention to interactive prompts and their expected responses
+4. Mark each step as completed as you progress
+5. Use the reference documents when you need additional context
+6. Track any issues encountered and apply the provided error recovery steps
 
 ## Let's Begin
 
-Start by analyzing the provided context and create a detailed implementation plan. Then proceed with delegating the first phase of implementation to a separate Claude instance.
+Start by reading the step-by-step implementation guide thoroughly, then proceed with executing each step in sequence.
 
-You MUST use the mcp__gibson tools to interact with GibsonAI for creating the backend.
+You MUST use the mcp__gibson__* tools to interact with GibsonAI for creating the backend.
+
+IMPORTANT REMINDER: When using the GibsonAI setup script, you MUST enter "." (just a period) when prompted for the project directory to avoid creating nested project structures.
 
 Begin now! Good luck with your implementation.
