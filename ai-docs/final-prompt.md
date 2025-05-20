@@ -99,12 +99,26 @@ Pre-populate with sample data for testing:
 
 ### 2. Frontend Implementation with GibsonAI Next.js Starter App
 
-After creating the backend, you'll have an API key and OpenAPI spec URL. Use these to generate the Next.js starter app:
+After creating the backend, you'll have an API key and OpenAPI spec URL. Use these to set up the official GibsonAI Next.js starter app:
 
-1. Request the creation of a Next.js app using the GibsonAI starter
-2. **IMPORTANT**: Create the app directly in the current working directory, NOT in a subdirectory. If using a CLI tool, use `.` to specify the current directory (e.g., `npx create-gibson-app .` instead of `npx create-gibson-app splitreceipt-app`)
-3. Provide the API key and OpenAPI spec URL during setup
-4. Enhance the generated app with ShadCN UI components
+1. Run the official GibsonAI setup script:
+   ```bash
+   bash <(curl -s https://raw.githubusercontent.com/GibsonAI/next-app/main/setup.sh)
+   ```
+
+2. **IMPORTANT**: When prompted for the project name/directory, use `.` to create the app directly in the current directory, NOT in a subdirectory
+
+3. When prompted during setup, provide:
+   - Your GibsonAI API key
+   - OpenAPI spec URL from your created project
+
+4. The setup script will configure:
+   - Next.js app structure
+   - Type-safe API client (generated from OpenAPI spec)
+   - Authentication system
+   - Environment variables
+
+5. Enhance the generated app with ShadCN UI components
 
 #### Adding ShadCN UI to the Next.js Starter App
 

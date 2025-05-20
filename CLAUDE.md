@@ -58,11 +58,21 @@ The 1-shot approach MUST follow this sequence:
    - Retrieve API key and OpenAPI spec URL
 
 2. **Frontend Implementation with Starter App**
-   - Generate the Next.js starter app
-   - **IMPORTANT**: Create the app directly in the current working directory, NOT in a subdirectory like 'splitreceipt-app'. All files should be in the root directory to avoid duplicate project structures.
-   - Provide API key and OpenAPI spec URL during setup
+   - Use the official GibsonAI Next.js starter app setup script:
+     ```bash
+     bash <(curl -s https://raw.githubusercontent.com/GibsonAI/next-app/main/setup.sh)
+     ```
+   - **IMPORTANT**: When prompted for the project name/directory, use `.` to create the app directly in the current directory, NOT in a subdirectory
+   - During setup, you will be prompted for:
+     - Your GibsonAI API key
+     - OpenAPI spec URL from your created project
+   - After setup completes, the following will be configured:
+     - Next.js app structure
+     - Type-safe API client (generated from OpenAPI spec)
+     - Authentication system
+     - Environment variables
    - Enhance with ShadCN UI components
-   - Implement key features using the generated type-safe client
+   - Implement key features using the pre-configured type-safe client
 
 ## Key Guidelines for the 1-Shot Challenge
 
@@ -143,10 +153,15 @@ The GibsonAI Next.js starter app provides several advantages for the 1-shot chal
 
 4. **Integration Process**:
    - After creating your GibsonAI backend, you'll receive an API key and OpenAPI spec URL
-   - Use these to generate the starter app directly in the current working directory
-   - Do NOT create a new subdirectory (e.g., do not run commands that create a new folder like `npx create-gibson-app splitreceipt-app`)
-   - If you need to use a CLI tool, use `.` to specify the current directory (e.g., `npx create-gibson-app .`)
-   - The app will be pre-configured to connect to your backend
+   - Use the official GibsonAI setup script:
+     ```bash
+     bash <(curl -s https://raw.githubusercontent.com/GibsonAI/next-app/main/setup.sh)
+     ```
+   - When prompted for project directory, enter `.` to create in the current directory
+   - Provide your API key and OpenAPI spec URL when prompted
+   - Do NOT create a new subdirectory - always install directly in the current directory
+   - The setup script will configure authentication, API client generation, and environment variables
+   - The app will be pre-configured to connect to your backend with proper authentication
 
 5. **Implementation Focus**:
    - Add ShadCN UI components for enhanced UI
